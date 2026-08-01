@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
@@ -27,26 +24,13 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install System Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             python3-pip \
             build-essential \
             git \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            zlib1g-dev \
-            libgstreamer1.0 \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
             zip \
             unzip \
             autoconf \
@@ -54,78 +38,31 @@ jobs:
             pkg-config \
             cmake \
             libffi-dev \
-            libssl-dev
+            libssl-dev \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev
 
-      - name: Setup Android SDK
-        run: |
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          unzip -q cmdtools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
-
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin
-
-          yes | sdkmanager --sdk_root=$HOME/android-sdk --licenses || true
-
-          sdkmanager --sdk_root=$HOME/android-sdk \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.0" \
-            "ndk;25.2.9519653"
-
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$HOME/android-sdk/ndk/25.2.9519653" >> $GITHUB_ENV
-          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/build-tools/33.0.0" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/ndk/25.2.9519653" >> $GITHUB_PATH
-
-      - name: Verify SDK Setup
-        run: |
-          echo "=== AIDL Check ==="
-          ls $HOME/android-sdk/build-tools/33.0.0/aidl || echo "AIDL NOT FOUND"
-          echo "=== NDK Check ==="
-          ls $HOME/android-sdk/ndk/25.2.9519653 || echo "NDK NOT FOUND"
-          echo "=== SDK Root ==="
-          echo $ANDROID_SDK_ROOT
-          echo "=== NDK Home ==="
-          echo $ANDROID_NDK_HOME
-
-      - name: Install Buildozer and Cython
+      - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython==0.29.33
+          pip install buildozer==1.5.0 cython==0.29.36
 
-      - name: Show Project Files
+      - name: Download NDK Manually
         run: |
-          echo "=== Project Files ==="
-          ls -la
-          echo "=== buildozer.spec ==="
-          cat buildozer.spec
-          echo "=== main.py exists? ==="
-          ls main.py || echo "main.py NOT FOUND"
+          mkdir -p $HOME/.buildozer/android/platform
+          cd $HOME/.buildozer/android/platform
+          wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+          unzip -q android-ndk-r25b-linux.zip
+          mv android-ndk-r25b android-ndk-r25b
+          echo "NDK Downloaded Successfully!"
+          ls
 
       - name: Build APK
         run: |
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_NDK_HOME=$HOME/android-sdk/ndk/25.2.9519653
-          export PATH=$PATH:$HOME/android-sdk/build-tools/33.0.0
-          export PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin
+          export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           buildozer -v android debug 2>&1 | tee build.log
-          echo "Exit code: $?"
-
-      - name: Find APK
-        if: always()
-        run: |
-          echo "=== Find APK ==="
-          find . -name "*.apk" 2>/dev/null || echo "No APK found"
-          echo "=== bin folder ==="
-          ls -la bin/ || echo "bin/ NOT found"
-          echo "=== Last 50 lines of build log ==="
-          tail -50 build.log || echo "No build log"
 
       - name: Upload APK
         if: always()
