@@ -13,7 +13,7 @@ import requests
 import json
 
 
-GROQ_API_KEY = "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"  # Free API key - groq.com
+GROQ_API_KEY = ""  # Free API key - groq.com
 
 
 class MessageBubble(BoxLayout):
