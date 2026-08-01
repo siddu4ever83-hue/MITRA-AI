@@ -18,18 +18,16 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
-    - name: Fix gradlew Permission
-      run: |
-        git update-index --chmod=+x gradlew
-        chmod +x gradlew
-        ls -la gradlew
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.4'
 
-    - name: Clean
-      run: ./gradlew clean --stacktrace
+    - name: Fix Permission
+      run: chmod +x gradlew
 
-    - name: Build Debug APK
+    - name: Build APK
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK
