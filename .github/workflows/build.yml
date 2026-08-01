@@ -27,27 +27,45 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+      - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             python3-pip \
             build-essential \
             git \
+            ffmpeg \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libportmidi-dev \
+            libswscale-dev \
+            libavformat-dev \
+            libavcodec-dev \
+            zlib1g-dev \
+            libgstreamer1.0 \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
             zip \
             unzip \
+            openjdk-17-jdk \
             autoconf \
             libtool \
             pkg-config \
-            cmake \
-            libffi-dev \
-            libssl-dev
+            cmake
 
       - name: Install Buildozer & Cython
         run: |
           pip install buildozer cython==0.29.33
 
-      - name: Build APK
+      - name: Accept Android SDK Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+
+      - name: Build APK with Buildozer
         run: |
           buildozer android debug
 
