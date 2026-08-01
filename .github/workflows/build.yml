@@ -27,37 +27,20 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            python3-pip \
-            build-essential \
-            git \
-            zip \
-            unzip \
-            autoconf \
-            libtool \
-            pkg-config \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev
+          sudo apt-get install -y python3-pip build-essential git zip unzip autoconf libtool pkg-config cmake libffi-dev libssl-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer==1.5.0 cython==0.29.36
 
-      - name: Download NDK Manually
+      - name: Download NDK
         run: |
           mkdir -p $HOME/.buildozer/android/platform
-          wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip \
-            -O $HOME/.buildozer/android/platform/android-ndk-r25b-linux.zip
+          wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O $HOME/.buildozer/android/platform/ndk.zip
           cd $HOME/.buildozer/android/platform
-          unzip -q android-ndk-r25b-linux.zip
-          rm android-ndk-r25b-linux.zip
-          echo "=== NDK Check ==="
+          unzip -q ndk.zip
+          rm ndk.zip
           ls $HOME/.buildozer/android/platform/
 
       - name: Build APK
@@ -78,3 +61,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4.4.3
         with:
+          name: build-log
+          path: build.log
