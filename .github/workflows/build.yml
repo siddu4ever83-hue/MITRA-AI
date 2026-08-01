@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Buildozer dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -49,24 +49,51 @@ jobs:
             gstreamer1.0-plugins-good \
             zip \
             unzip \
-            openjdk-17-jdk \
             autoconf \
             libtool \
             pkg-config \
-            cmake
+            cmake \
+            libffi-dev \
+            libssl-dev
+
+      - name: Install Android SDK Command Line Tools
+        run: |
+          # Download SDK tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          unzip -q commandlinetools-linux-9477386_latest.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+
+          # Set Environment Variables
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/build-tools/33.0.0" >> $GITHUB_PATH
+
+      - name: Install Android SDK Packages
+        run: |
+          yes | sdkmanager --sdk_root=$HOME/android-sdk --licenses || true
+          sdkmanager --sdk_root=$HOME/android-sdk \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.0" \
+            "ndk;25.2.9519653"
+
+      - name: Set NDK Path
+        run: |
+          echo "ANDROID_NDK_HOME=$HOME/android-sdk/ndk/25.2.9519653" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/ndk/25.2.9519653" >> $GITHUB_PATH
 
       - name: Install Buildozer & Cython
         run: |
           pip install buildozer cython==0.29.33
 
-      - name: Accept Android SDK Licenses
+      - name: Build APK
         run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
-
-      - name: Build APK with Buildozer
-        run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_NDK_HOME=$HOME/android-sdk/ndk/25.2.9519653
           buildozer android debug
 
       - name: Upload APK
