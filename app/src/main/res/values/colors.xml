@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#1E1E2E</color>
+    <color name="colorPrimaryDark">#13131F</color>
+    <color name="colorAccent">#CBA6F7</color>
+    <color name="toolbarBackground">#181825</color>
+    <color name="editorBackground">#1E1E2E</color>
+    <color name="editorText">#CDD6F4</color>
+    <color name="previewBackground">#1E1E2E</color>
+    <color name="previewText">#CDD6F4</color>
+    <color name="divider">#45475A</color>
+    <color name="buttonTint">#89B4FA</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>
