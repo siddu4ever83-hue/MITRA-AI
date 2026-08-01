@@ -34,6 +34,33 @@ jobs:
           pip install --upgrade pip
           pip install buildozer==1.5.0 cython==0.29.36
 
+      - name: Setup Android SDK Manually
+        run: |
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk
+          cd $HOME/.buildozer/android/platform/android-sdk
+
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdtools.zip
+          unzip -q cmdtools.zip
+          mkdir -p cmdline-tools/latest
+          cp -r cmdline-tools/* cmdline-tools/latest/ 2>/dev/null || true
+          mv tools cmdline-tools/latest/ 2>/dev/null || true
+
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+
+          mkdir -p $HOME/.android
+          touch $HOME/.android/repositories.cfg
+
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses || true
+
+          sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+          sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-33"
+          sdkmanager --sdk_root=$ANDROID_SDK_ROOT "build-tools;33.0.0"
+
+          echo "=== Build Tools Check ==="
+          ls $ANDROID_SDK_ROOT/build-tools/33.0.0/aidl
+          echo "AIDL Found!"
+
       - name: Download NDK
         run: |
           mkdir -p $HOME/.buildozer/android/platform
@@ -41,12 +68,21 @@ jobs:
           cd $HOME/.buildozer/android/platform
           unzip -q ndk.zip
           rm ndk.zip
-          ls $HOME/.buildozer/android/platform/
+          echo "=== NDK Check ==="
+          ls $HOME/.buildozer/android/platform/android-ndk-r25b
 
       - name: Build APK
         run: |
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+          export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           export ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r25b
+          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+          export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+          export PATH=$PATH:$ANDROID_SDK_ROOT/build-tools/33.0.0
+
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses || true
+
           buildozer -v android debug 2>&1 | tee build.log
 
       - name: Upload APK
