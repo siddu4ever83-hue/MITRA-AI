@@ -52,16 +52,18 @@ jobs:
       - name: Download NDK Manually
         run: |
           mkdir -p $HOME/.buildozer/android/platform
+          wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip \
+            -O $HOME/.buildozer/android/platform/android-ndk-r25b-linux.zip
           cd $HOME/.buildozer/android/platform
-          wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
           unzip -q android-ndk-r25b-linux.zip
-          mv android-ndk-r25b android-ndk-r25b
-          echo "NDK Downloaded Successfully!"
-          ls
+          rm android-ndk-r25b-linux.zip
+          echo "=== NDK Check ==="
+          ls $HOME/.buildozer/android/platform/
 
       - name: Build APK
         run: |
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
+          export ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r25b
           buildozer -v android debug 2>&1 | tee build.log
 
       - name: Upload APK
@@ -76,5 +78,3 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4.4.3
         with:
-          name: build-log
-          path: build.log
