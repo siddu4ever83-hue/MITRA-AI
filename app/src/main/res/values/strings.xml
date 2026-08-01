@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MITRA AI</string>
+    <string name="new_file">New</string>
+    <string name="open_file">Open</string>
+    <string name="save_file">Save</string>
+    <string name="save_as">Save As</string>
+    <string name="preview">Preview</string>
+    <string name="about">About</string>
+    <string name="untitled">Untitled</string>
+    <string name="unsaved_changes">Unsaved Changes</string>
+    <string name="save_changes_message">Do you want to save changes?</string>
+    <string name="exit_message">You have unsaved changes. Exit anyway?</string>
+    <string name="save">Save</string>
+    <string name="discard">Discard</string>
+    <string name="cancel">Cancel</string>
+    <string name="exit">Exit</string>
+    <string name="file_saved">File Saved!</string>
+    <string name="editor_hint">Start writing Markdown here...</string>
+    <string name="about_message">MITRA AI - Markdown Editor\nVersion 1.0\n\nFeatures:\n• Bold, Italic, Strikethrough\n• Headings H1-H3\n• Lists and Checkboxes\n• Code Blocks\n• Links and Images\n• Tables\n• Blockquotes</string>
+</resources>
