@@ -82,10 +82,30 @@ jobs:
           echo "$HOME/android-sdk/build-tools/33.0.0" >> $GITHUB_PATH
           echo "$HOME/android-sdk/ndk/25.2.9519653" >> $GITHUB_PATH
 
+      - name: Verify SDK Setup
+        run: |
+          echo "=== AIDL Check ==="
+          ls $HOME/android-sdk/build-tools/33.0.0/aidl || echo "AIDL NOT FOUND"
+          echo "=== NDK Check ==="
+          ls $HOME/android-sdk/ndk/25.2.9519653 || echo "NDK NOT FOUND"
+          echo "=== SDK Root ==="
+          echo $ANDROID_SDK_ROOT
+          echo "=== NDK Home ==="
+          echo $ANDROID_NDK_HOME
+
       - name: Install Buildozer and Cython
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
+
+      - name: Show Project Files
+        run: |
+          echo "=== Project Files ==="
+          ls -la
+          echo "=== buildozer.spec ==="
+          cat buildozer.spec
+          echo "=== main.py exists? ==="
+          ls main.py || echo "main.py NOT FOUND"
 
       - name: Build APK
         run: |
@@ -93,10 +113,31 @@ jobs:
           export ANDROID_HOME=$HOME/android-sdk
           export ANDROID_NDK_HOME=$HOME/android-sdk/ndk/25.2.9519653
           export PATH=$PATH:$HOME/android-sdk/build-tools/33.0.0
+          export PATH=$PATH:$HOME/android-sdk/cmdline-tools/latest/bin
           buildozer -v android debug 2>&1 | tee build.log
+          echo "Exit code: $?"
 
-      - name: Check bin folder
+      - name: Find APK
         if: always()
         run: |
-          echo "=== Checking bin folder ==="
-          ls -la bin
+          echo "=== Find APK ==="
+          find . -name "*.apk" 2>/dev/null || echo "No APK found"
+          echo "=== bin folder ==="
+          ls -la bin/ || echo "bin/ NOT found"
+          echo "=== Last 50 lines of build log ==="
+          tail -50 build.log || echo "No build log"
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: MITRA-AI-APK
+          path: bin/*.apk
+          if-no-files-found: warn
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: build-log
+          path: build.log
